@@ -23,10 +23,16 @@ module mips(input         clk, reset,
   wire [5:0]  op, funct;
   wire        lbu;        // LBU
 
+  // The control unit receives the current instruction from the datapath and tells the
+  // datapath how to execute that instruction.
   controller c(clk, reset, op, funct, zero,
                pcen, memwrite, irwrite, regwrite,
                alusrca, iord, memtoreg, regdst, 
                alusrcb, pcsrc, alucontrol, lbu);  // LBU
+
+  // The datapath operates on words of data. It
+  // contains structures such as memories, registers, ALUs, and multiplexers.
+  // MIPS is a 32-bit architecture, so we will use a 32-bit datapath. 
   datapath dp(clk, reset, 
               pcen, irwrite, regwrite,
               alusrca, iord, memtoreg, regdst,

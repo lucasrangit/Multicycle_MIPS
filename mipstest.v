@@ -1,8 +1,6 @@
-//------------------------------------------------
 // mipstest.v
-// David_Harris@hmc.edu 23 October 2005
+// HDL Example 7.12 MIPS TESTBENCH
 // Test bench for MIPS processor
-//------------------------------------------------
 
 module testbench();
 
