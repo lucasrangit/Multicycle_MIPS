@@ -10,10 +10,6 @@ module testbench();
   wire [31:0] writedata, dataadr;
   wire memwrite;
 
-  // keep track of execution status
-  reg  [31:0] cycle;
-  reg         succeed;
-
   // instantiate device to be tested
   topmulti dut(clk, reset, writedata, dataadr, memwrite);
   
@@ -21,27 +17,26 @@ module testbench();
   initial
     begin
       reset <= 1; # 12; reset <= 0;
-	 cycle <= 1;
-	 succeed <= 0;
     end
 
   // generate clock to sequence tests
   always
     begin
       clk <= 1; # 5; clk <= 0; # 5;
-	 cycle <= cycle + 1;
     end
 
   // check results
+  // If successful, it should write the value 7 to address 84
   always@(negedge clk)
     begin
-      if(memwrite & dataadr == 108) begin
-        if(writedata == 65035)
+      if (memwrite) begin
+        if (dataadr === 84 & writedata == 7) begin
           $display("Simulation succeeded");
-		  else begin
+			 $stop;
+		  end else if (dataadr !== 80) begin
 		    $display("Simulation failed");
+			 $stop;
 		  end
-        $stop;
       end
     end
 endmodule
