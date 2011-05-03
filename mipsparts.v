@@ -51,12 +51,6 @@ module regfile(input         clk,
   assign rd2 = (ra2 != 0) ? rf[ra2] : 0;
 endmodule
 
-module adder(input [31:0] a, b,
-             output [31:0] y);
-
-  assign y = a + b;
-endmodule
-
 module sl2(input  [31:0] a,
            output [31:0] y);
 
