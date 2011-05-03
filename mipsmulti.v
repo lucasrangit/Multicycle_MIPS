@@ -67,6 +67,8 @@ module controller(input        clk, reset,
 
 endmodule
 
+// The controller receives the current instruction from the datapath
+// and tell the datapath how to execute that instruction.
 module maindec(input        clk, reset, 
                input  [5:0] op, 
                output       pcwrite, memwrite, irwrite, regwrite,
@@ -77,24 +79,25 @@ module maindec(input        clk, reset,
 					output       bne,     // BNE
 					output       lbu);    // LBU
 
-  parameter   FETCH   = 5'b00000;   // State 0
-  parameter   DECODE  = 5'b00001;   // State 1
-  parameter   MEMADR  = 5'b00010;	// State 2
-  parameter   MEMRD   = 5'b00011;	// State 3
-  parameter   MEMWB   = 5'b00100;	// State 5
-  parameter   MEMWR   = 5'b00101;	// State 5
-  parameter   RTYPEEX = 5'b00110;	// State 6
-  parameter   RTYPEWB = 5'b00111;	// State 7
-  parameter   BEQEX   = 5'b01000;	// State 8
-  parameter   ADDIEX  = 5'b01001;	// State 9
-  parameter   ADDIWB  = 5'b01010;	// state a
-  parameter   JEX     = 5'b01011;	// State b
-  parameter   ORIEX   = 5'b01100;   // State c // ORI
-  parameter   ORIWB   = 5'b01101;   // State d // ORI
-  parameter   XORIEX  = 5'b01110;   // State e // XORI
-  parameter   XORIWB  = 5'b01111;   // State f // XORI
-  parameter   BNEEX   = 5'b10000;   // State 10 // BNE
-  parameter   LBURD   = 5'b10001;  // State 11 // LBU
+  // FSM States
+  parameter   FETCH   			= 5'b00000;   // State 0
+  parameter   DECODE  			= 5'b00001;   // State 1
+  parameter   MEMADR  			= 5'b00010;	// State 2
+  parameter   MEMRD   			= 5'b00011;	// State 3
+  parameter   MEMWB   			= 5'b00100;	// State 4
+  parameter   MEMWR   			= 5'b00101;	// State 5
+  parameter   EXECUTE 			= 5'b00110;	// State 6
+  parameter   ALUWRITEBACK 	= 5'b00111;	// State 7
+  parameter   BRANCH   			= 5'b01000;	// State 8
+  parameter   ADDIEXECUTE		= 5'b01001;	// State 9
+  parameter   ADDIWRITEBACK	= 5'b01010;	// state a
+  parameter   JEX     			= 5'b01011;	// State b
+  parameter   ORIEX   			= 5'b01100;   // State c // ORI
+  parameter   ORIWB   			= 5'b01101;   // State d // ORI
+  parameter   XORIEX  			= 5'b01110;   // State e // XORI
+  parameter   XORIWB  			= 5'b01111;   // State f // XORI
+  parameter   BNEEX   		= 5'b10000;   // State 10 // BNE
+  parameter   LBURD   		= 5'b10001;  // State 11 // LBU
 
   parameter   LW      = 6'b100011;	// Opcode for lw
   parameter   SW      = 6'b101011;	// Opcode for sw
@@ -123,9 +126,9 @@ module maindec(input        clk, reset,
                  LW:      nextstate <= MEMADR;
                  SW:      nextstate <= MEMADR;
 					  LBU:     nextstate <= MEMADR; // LBU
-                 RTYPE:   nextstate <= RTYPEEX;
-                 BEQ:     nextstate <= BEQEX;
-                 ADDI:    nextstate <= ADDIEX;
+                 RTYPE:   nextstate <= EXECUTE;
+                 BEQ:     nextstate <= BRANCH;
+                 ADDI:    nextstate <= ADDIEXECUTE;
                  J:       nextstate <= JEX;
 					  ORI:     nextstate <= ORIEX;  // ORI
 					  XORI:    nextstate <= XORIEX; // XORI
@@ -141,11 +144,11 @@ module maindec(input        clk, reset,
       MEMRD:   nextstate <= MEMWB;
       MEMWB:   nextstate <= FETCH;
       MEMWR:   nextstate <= FETCH;
-      RTYPEEX: nextstate <= RTYPEWB;
-      RTYPEWB: nextstate <= FETCH;
-      BEQEX:   nextstate <= FETCH;
-      ADDIEX:  nextstate <= ADDIWB;
-      ADDIWB:  nextstate <= FETCH;
+      EXECUTE: nextstate <= ALUWRITEBACK;
+      ALUWRITEBACK: nextstate <= FETCH;
+      BRANCH:   nextstate <= FETCH;
+      ADDIEXECUTE:  nextstate <= ADDIWRITEBACK;
+      ADDIWRITEBACK:  nextstate <= FETCH;
       JEX:     nextstate <= FETCH;
 		ORIEX:   nextstate <= ORIWB;  // ORI
 		ORIWB:   nextstate <= FETCH;  // ORI
@@ -171,11 +174,11 @@ module maindec(input        clk, reset,
       MEMRD:   controls <= 19'b0000_001000_00000_000_0;
       MEMWB:   controls <= 19'b0001_000100_00000_000_0;
       MEMWR:   controls <= 19'b0100_001000_00000_000_0;
-      RTYPEEX: controls <= 19'b0000_100000_00000_010_0;
-      RTYPEWB: controls <= 19'b0001_000010_00000_000_0;
-      BEQEX:   controls <= 19'b0000_110000_00001_001_0;
-      ADDIEX:  controls <= 19'b0000_100000_01000_000_0;
-      ADDIWB:  controls <= 19'b0001_000000_00000_000_0;
+      EXECUTE: controls <= 19'b0000_100000_00000_010_0;
+      ALUWRITEBACK: controls <= 19'b0001_000010_00000_000_0;
+      BRANCH:   controls <= 19'b0000_110000_00001_001_0;
+      ADDIEXECUTE:  controls <= 19'b0000_100000_01000_000_0;
+      ADDIWRITEBACK:  controls <= 19'b0001_000000_00000_000_0;
       JEX:     controls <= 19'b1000_000000_00010_000_0;     
       ORIEX:   controls <= 19'b0000_100000_10000_011_0; // ORI
 		ORIWB:   controls <= 19'b0001_000000_00000_000_0; // ORI
