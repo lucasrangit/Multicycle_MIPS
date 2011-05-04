@@ -37,7 +37,6 @@ module mips(input         clk, reset,
               pcen, irwrite, regwrite,
               alusrca, iord, memtoreg, regdst,
               alusrcb, pcsrc, alucontrol,
-				  lbu,                             // LBU
               op, funct, zero,
               adr, writedata, readdata);
 endmodule
