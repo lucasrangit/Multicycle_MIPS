@@ -21,14 +21,13 @@ module mips(input         clk, reset,
   wire [1:0]  pcsrc;
   wire [2:0]  alucontrol;
   wire [5:0]  op, funct;
-  wire        lbu;        // LBU
 
   // The control unit receives the current instruction from the datapath and tells the
   // datapath how to execute that instruction.
   controller c(clk, reset, op, funct, zero,
                pcen, memwrite, irwrite, regwrite,
                alusrca, iord, memtoreg, regdst, 
-               alusrcb, pcsrc, alucontrol, lbu);  // LBU
+               alusrcb, pcsrc, alucontrol);
 
   // The datapath operates on words of data. It
   // contains structures such as memories, registers, ALUs, and multiplexers.
@@ -52,8 +51,7 @@ module controller(input        clk, reset,
                   output       alusrca, iord, memtoreg, regdst,
                   output [2:0] alusrcb,     // ORI, XORI 
 						output [1:0] pcsrc,
-                  output [2:0] alucontrol,
-						output       lbu);        // LBU
+                  output [2:0] alucontrol);
 
   wire [2:0] aluop;  // XORI
   wire       branch, pcwrite;
@@ -63,7 +61,7 @@ module controller(input        clk, reset,
   maindec md(clk, reset, op,
              pcwrite, memwrite, irwrite, regwrite,
              alusrca, branch, iord, memtoreg, regdst, 
-             alusrcb, pcsrc, aluop, bne, lbu);  // BNE, LBU
+             alusrcb, pcsrc, aluop, bne);  // BNE
   aludec  ad(funct, aluop, alucontrol);
 
   assign pcen = pcwrite | (branch & zero);
@@ -79,8 +77,7 @@ module maindec(input        clk, reset,
                output [2:0] alusrcb, // ORI, XORI
 					output [1:0] pcsrc,   
                output [2:0] aluop,   // XORI
-					output       bne,     // BNE
-					output       lbu);    // LBU
+					output       bne);    // BNE
 
   // FSM States
   parameter   FETCH   			= 5'b00000;   // State 0
@@ -105,7 +102,7 @@ module maindec(input        clk, reset,
   parameter   J       = 6'b000010;	// jump j
 
   reg [4:0]  state, nextstate;
-  reg [18:0] controls;  // ORI, XORI, BNE, LBU
+  reg [17:0] controls;  // ORI, XORI, BNE
 
   // state register
   always @(posedge clk or posedge reset)			
@@ -146,24 +143,23 @@ module maindec(input        clk, reset,
   assign {pcwrite, memwrite, irwrite, regwrite, 
           alusrca, branch, iord, memtoreg, regdst, bne, // BNE
           alusrcb, pcsrc, 
-			 aluop,  // extend aluop to 3 bits // XORI
-			 lbu} = controls;  // LBU
+			 aluop} = controls;  // extend aluop to 3 bits // XORI
 
   always @( * )
     case(state)
-      FETCH:   controls <= 19'b1010_000000_00100_000_0;
-      DECODE:  controls <= 19'b0000_000000_01100_000_0;
-      MEMADR:  controls <= 19'b0000_100000_01000_000_0;
-      MEMRD:   controls <= 19'b0000_001000_00000_000_0;
-      MEMWB:   controls <= 19'b0001_000100_00000_000_0;
-      MEMWR:   controls <= 19'b0100_001000_00000_000_0;
-      EXECUTE: controls <= 19'b0000_100000_00000_010_0;
-      ALUWRITEBACK: controls <= 19'b0001_000010_00000_000_0;
-      BRANCH:   controls <= 19'b0000_110000_00001_001_0;
-      ADDIEXECUTE:  controls <= 19'b0000_100000_01000_000_0;
-      ADDIWRITEBACK:  controls <= 19'b0001_000000_00000_000_0;
-      JUMP:    controls <= 19'b1000_000000_00010_000_0;     
-      default: controls <= 19'b0000_xxxxxx_xxxxx_xxx_x; // should never happen
+      FETCH:   controls <= 19'b1010_000000_00100_000;
+      DECODE:  controls <= 19'b0000_000000_01100_000;
+      MEMADR:  controls <= 19'b0000_100000_01000_000;
+      MEMRD:   controls <= 19'b0000_001000_00000_000;
+      MEMWB:   controls <= 19'b0001_000100_00000_000;
+      MEMWR:   controls <= 19'b0100_001000_00000_000;
+      EXECUTE: controls <= 19'b0000_100000_00000_010;
+      ALUWRITEBACK: controls <= 19'b0001_000010_00000_000;
+      BRANCH:   controls <= 19'b0000_110000_00001_001;
+      ADDIEXECUTE:  controls <= 19'b0000_100000_01000_000;
+      ADDIWRITEBACK:  controls <= 19'b0001_000000_00000_000;
+      JUMP:    controls <= 19'b1000_000000_00010_000;     
+      default: controls <= 19'b0000_xxxxxx_xxxxx_xxx; // should never happen
     endcase
 endmodule
 
