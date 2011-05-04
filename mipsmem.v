@@ -1,13 +1,8 @@
-//------------------------------------------------
-// mipsmem.v
-// Sarah_Harris@hmc.edu 27 May 2007
-// External unified memory used by MIPS multicycle
-// processor
-//------------------------------------------------
-
-module idmem(input         clk, we,
-             input  [31:0] a, wd,
-             output [31:0] rd);
+// Multicycle MIPS instruction and data memory
+// "memfile.dat" contains a test program
+module mem(input         clk, we,
+           input  [31:0] a, wd,
+           output [31:0] rd);
 
   reg  [31:0] RAM[63:0];
 

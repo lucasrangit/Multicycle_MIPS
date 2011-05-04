@@ -1,9 +1,5 @@
-//------------------------------------------------
-// mipsparts.v
-// Sarah_Harris@hmc.edu 27 May 2007
-// Components used in MIPS processor
-//------------------------------------------------
-
+// 32-bit ALU
+// Function codes are defined on page 243
 module alu(	input [31:0] A, B, 
             input [2:0] F, 
 				output reg [31:0] Y, output Zero);
@@ -24,7 +20,7 @@ module alu(	input [31:0] A, B,
 	assign Zero = (Y == 32'b0);
 endmodule
 
-
+// Example 7.6 Register file
 module regfile(input         clk, 
                input         we3, 
                input  [4:0]  ra1, ra2, wa3, 
@@ -45,6 +41,7 @@ module regfile(input         clk,
   assign rd2 = (ra2 != 0) ? rf[ra2] : 0;
 endmodule
 
+// Example 7.8 Left Shift (Multiply by 4)
 module sl2(input  [31:0] a,
            output [31:0] y);
 
@@ -52,12 +49,14 @@ module sl2(input  [31:0] a,
   assign y = {a[29:0], 2'b00};
 endmodule
 
+// Example 7.9 Sign Extension
 module signext(input  [15:0] a,
                output [31:0] y);
               
   assign y = {{16{a[15]}}, a};
 endmodule
 
+// Example 7.10 Resettable Flip-flop with width parameter
 module flopr #(parameter WIDTH = 8)
               (input                  clk, reset,
                input      [WIDTH-1:0] d, 
@@ -68,6 +67,7 @@ module flopr #(parameter WIDTH = 8)
     else       q <= d;
 endmodule
 
+// Example 4.20 RESETTABLE ENABLED REGISTER with width parameter
 module flopenr #(parameter WIDTH = 8)
                 (input                  clk, reset,
                  input                  en,
@@ -79,6 +79,7 @@ module flopenr #(parameter WIDTH = 8)
     else if (en)    q <= d;
 endmodule
 
+// Example 4.5 2:1 MULTIPLEXER with width parameter
 module mux2 #(parameter WIDTH = 8)
              (input  [WIDTH-1:0] d0, d1, 
               input              s, 
@@ -87,7 +88,7 @@ module mux2 #(parameter WIDTH = 8)
   assign y = s ? d1 : d0; 
 endmodule
 
-
+// 3:1 MULTIPLEXER with width parameter
 module mux3 #(parameter WIDTH = 8)
              (input  [WIDTH-1:0] d0, d1, d2,
               input  [1:0]       s, 
@@ -96,6 +97,7 @@ module mux3 #(parameter WIDTH = 8)
   assign #1 y = s[1] ? d2 : (s[0] ? d1 : d0); 
 endmodule
 
+// Example 4.6 4:1 MULTIPLEXER with width parameter
 module mux4 #(parameter WIDTH = 8)
              (input      [WIDTH-1:0] d0, d1, d2, d3,
               input      [1:0]       s, 

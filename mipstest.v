@@ -1,4 +1,3 @@
-// mipstest.v
 // HDL Example 7.12 MIPS TESTBENCH
 // Test bench for MIPS processor
 

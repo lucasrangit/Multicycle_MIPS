@@ -1,15 +1,4 @@
-//-------------------------------------------------------
-// mipsmulti.v
-// David_Harris@hmc.edu 8 November 2005
 // Multicycle MIPS processor
-//------------------------------------------------
-
-// files needed for simulation:
-//  mipsttest.v
-//  topmulti.v
-//  mipsmulti.v
-//  mipsparts.v
-
 module mips(input         clk, reset,
             output [31:0] adr, writedata,
             output        memwrite,
@@ -78,8 +67,8 @@ module maindec(input        clk, reset,
                output [1:0] aluop); 
 
   // FSM States
-  parameter   FETCH   			= 5'b00000;   // State 0
-  parameter   DECODE  			= 5'b00001;   // State 1
+  parameter   FETCH   			= 5'b00000; // State 0
+  parameter   DECODE  			= 5'b00001; // State 1
   parameter   MEMADR  			= 5'b00010;	// State 2
   parameter   MEMRD   			= 5'b00011;	// State 3
   parameter   MEMWB   			= 5'b00100;	// State 4
@@ -169,8 +158,8 @@ module aludec(input      [5:0] funct,
     case(aluop)
       3'b000: alucontrol <= 3'b010;  // add
       3'b001: alucontrol <= 3'b010;  // sub
-
-      3'b010: case(funct)           // RTYPE
+      // RTYPE instruction use the 6-bit funct field of instruction to specify ALU operation
+      3'b010: case(funct)           
           6'b100000: alucontrol <= 3'b010; // ADD
           6'b100010: alucontrol <= 3'b110; // SUB
           6'b100100: alucontrol <= 3'b000; // AND
@@ -180,7 +169,6 @@ module aludec(input      [5:0] funct,
         endcase
 		default: alucontrol <= 3'bxxx; // ???
     endcase
-
 endmodule
 
 module datapath(input         clk, reset,
