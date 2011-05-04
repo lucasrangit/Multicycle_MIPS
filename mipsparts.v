@@ -115,33 +115,3 @@ module mux4 #(parameter WIDTH = 8)
          2'b11: y <= d3;
       endcase
 endmodule
-
-// mux5 is needed for ORI, XORI
-module mux5 #(parameter WIDTH = 8)
-             (input      [WIDTH-1:0] d0, d1, d2, d3, d4,
-              input      [2:0]       s, 
-              output reg [WIDTH-1:0] y);
-
-   always @( * )
-      case(s)
-         3'b000: y <= d0;
-         3'b001: y <= d1;
-         3'b010: y <= d2;
-         3'b011: y <= d3;
-         3'b100: y <= d4;
-			endcase
-endmodule
-
-// zeroext is needed for ORI, XORI
-module zeroext(input  [15:0] a,
-               output [31:0] y);
-              
-  assign y = {16'b0, a};
-endmodule
-
-// zeroext8_32 is needed for LBU
-module zeroext8_32(input  [7:0] a,
-               output [31:0] y);
-              
-  assign y = {24'b0, a};
-endmodule

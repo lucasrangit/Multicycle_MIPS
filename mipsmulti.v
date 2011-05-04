@@ -208,7 +208,6 @@ module datapath(input         clk, reset,
   wire [31:0] a;
   wire [31:0] aluresult, aluout;
   wire [31:0] signimm;   // the sign-extended immediate
-  wire [31:0] zeroimm;   // the zero-extended immediate  // ORI, XORI
   wire [31:0] signimmsh;	// the sign-extended immediate shifted left by 2
   wire [31:0] wd3, rd1, rd2;
 
@@ -227,13 +226,11 @@ module datapath(input         clk, reset,
   regfile       rf(clk, regwrite, instr[25:21], instr[20:16], 
                    writereg, wd3, rd1, rd2);
   signext       se(instr[15:0], signimm);
-  zeroext       ze(instr[15:0], zeroimm);  // ORI, XORI
   sl2           immsh(signimm, signimmsh);
   flopr   #(32) areg(clk, reset, rd1, a);
   flopr   #(32) breg(clk, reset, rd2, writedata);
   mux2    #(32) srcamux(pc, a, alusrca, srca);
-  mux5    #(32) srcbmux(writedata, 32'b100, signimm, signimmsh,
-                        zeroimm,  // ORI, XORI  
+  mux4    #(32) srcbmux(writedata, 32'b100, signimm, signimmsh,
                         alusrcb, srcb);
   alu           alu(srca, srcb, alucontrol, rd1[4:0],  // SRLV
                     aluresult, zero);
