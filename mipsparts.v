@@ -5,29 +5,23 @@
 //------------------------------------------------
 
 module alu(	input [31:0] A, B, 
-            input [3:0] F, input [4:0] shamt, // SRLV 
+            input [3:0] F, 
 				output reg [31:0] Y, output Zero);
-	
-	wire [31:0] S, Bout;
-	
-	assign Bout = F[3] ? ~B : B;
-	assign S = A + Bout + F[3];  // SRLV
-
+				
 	always @ ( * )
 		case (F[2:0])
-			3'b000: Y <= A & Bout;
-			3'b001: Y <= A | Bout;
-			3'b010: Y <= S;
-			3'b011: Y <= S[31];
-			3'b100: Y <= (Bout >> shamt);  // SRLV
-			3'b101: Y <= A ^ Bout;  // XORI
+			3'b000: Y <= A & B;
+			3'b001: Y <= A | B;
+			3'b010: Y <= A + B;
+			//3'b011: Y <= 0;  // not used
+			3'b011: Y <= A & ~B;
+			3'b101: Y <= A + ~B;
+			3'b110: Y <= A - B;
+			3'b111: Y <= A < B ? 1:0;
+			default: Y <= 0; //default to 0, should not happen
 		endcase
 	
 	assign Zero = (Y == 32'b0);
-	
-//	assign Overflow =  A[31]& Bout[31] & ~Y[31] |
-//							~A[31] & ~Bout[31] & Y[31];
-
 endmodule
 
 

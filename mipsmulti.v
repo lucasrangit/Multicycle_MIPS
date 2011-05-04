@@ -232,7 +232,7 @@ module datapath(input         clk, reset,
   mux2    #(32) srcamux(pc, a, alusrca, srca);
   mux4    #(32) srcbmux(writedata, 32'b100, signimm, signimmsh,
                         alusrcb, srcb);
-  alu           alu(srca, srcb, alucontrol, rd1[4:0],  // SRLV
+  alu           alu(srca, srcb, alucontrol,
                     aluresult, zero);
   flopr   #(32) alureg(clk, reset, aluresult, aluout);
   mux3    #(32) pcmux(aluresult, aluout, 
