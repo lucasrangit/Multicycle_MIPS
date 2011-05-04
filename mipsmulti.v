@@ -19,7 +19,7 @@ module mips(input         clk, reset,
               alusrca, iord, memtoreg, regdst;
   wire [2:0]  alusrcb;    // ORI, XORI 
   wire [1:0]  pcsrc;
-  wire [3:0]  alucontrol; // SRLV
+  wire [2:0]  alucontrol;
   wire [5:0]  op, funct;
   wire        lbu;        // LBU
 
@@ -52,7 +52,7 @@ module controller(input        clk, reset,
                   output       alusrca, iord, memtoreg, regdst,
                   output [2:0] alusrcb,     // ORI, XORI 
 						output [1:0] pcsrc,
-                  output [3:0] alucontrol,  // SRLV
+                  output [2:0] alucontrol,
 						output       lbu);        // LBU
 
   wire [2:0] aluop;  // XORI
@@ -169,22 +169,22 @@ endmodule
 
 module aludec(input      [5:0] funct,
               input      [2:0] aluop,       // XORI
-              output reg [3:0] alucontrol); // XORI, SRLV
+              output reg [2:0] alucontrol); // XORI
 
     always @( * )
     case(aluop)
-      3'b000: alucontrol <= 4'b0010;  // add
-      3'b001: alucontrol <= 4'b1010;  // sub
+      3'b000: alucontrol <= 3'b010;  // add
+      3'b001: alucontrol <= 3'b010;  // sub
 
       3'b010: case(funct)           // RTYPE
-          6'b100000: alucontrol <= 4'b0010; // ADD
-          6'b100010: alucontrol <= 4'b1010; // SUB
-          6'b100100: alucontrol <= 4'b0000; // AND
-          6'b100101: alucontrol <= 4'b0001; // OR
-          6'b101010: alucontrol <= 4'b1011; // SLT
-          default:   alucontrol <= 4'bxxxx; // ???
+          6'b100000: alucontrol <= 3'b010; // ADD
+          6'b100010: alucontrol <= 3'b110; // SUB
+          6'b100100: alucontrol <= 3'b000; // AND
+          6'b100101: alucontrol <= 3'b001; // OR
+          6'b101010: alucontrol <= 3'b111; // SLT
+          default:   alucontrol <= 3'bxxx; // ???
         endcase
-		default: alucontrol <= 4'bxxxx; // ???
+		default: alucontrol <= 3'bxxx; // ???
     endcase
 
 endmodule
@@ -194,7 +194,7 @@ module datapath(input         clk, reset,
                 input         alusrca, iord, memtoreg, regdst,
                 input  [2:0]  alusrcb,     // ORI, XORI 
 					 input  [1:0]  pcsrc, 
-                input  [3:0]  alucontrol,  // SRLV
+                input  [2:0]  alucontrol,
                 output [5:0]  op, funct,
                 output        zero,
                 output [31:0] adr, writedata, 

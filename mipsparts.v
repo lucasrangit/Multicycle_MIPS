@@ -5,7 +5,7 @@
 //------------------------------------------------
 
 module alu(	input [31:0] A, B, 
-            input [3:0] F, 
+            input [2:0] F, 
 				output reg [31:0] Y, output Zero);
 				
 	always @ ( * )
