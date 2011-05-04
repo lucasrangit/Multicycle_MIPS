@@ -17,7 +17,7 @@ module mips(input         clk, reset,
 
   wire        zero, pcen, irwrite, regwrite,
               alusrca, iord, memtoreg, regdst;
-  wire [2:0]  alusrcb;    // ORI, XORI 
+  wire [1:0]  alusrcb;
   wire [1:0]  pcsrc;
   wire [2:0]  alucontrol;
   wire [5:0]  op, funct;
@@ -49,11 +49,11 @@ module controller(input        clk, reset,
                   input        zero,
                   output       pcen, memwrite, irwrite, regwrite,
                   output       alusrca, iord, memtoreg, regdst,
-                  output [2:0] alusrcb,     // ORI, XORI 
+                  output [1:0] alusrcb,
 						output [1:0] pcsrc,
                   output [2:0] alucontrol);
 
-  wire [2:0] aluop;  // XORI
+  wire [1:0] aluop;
   wire       branch, pcwrite;
 
   // Main Decoder and ALU Decoder subunits.
@@ -73,9 +73,9 @@ module maindec(input        clk, reset,
                input  [5:0] op, 
                output       pcwrite, memwrite, irwrite, regwrite,
                output       alusrca, branch, iord, memtoreg, regdst,
-               output [2:0] alusrcb, // ORI, XORI
+               output [1:0] alusrcb, 
 					output [1:0] pcsrc,   
-               output [2:0] aluop);  // XORI
+               output [1:0] aluop); 
 
   // FSM States
   parameter   FETCH   			= 5'b00000;   // State 0
@@ -100,7 +100,7 @@ module maindec(input        clk, reset,
   parameter   J       = 6'b000010;	// jump j
 
   reg [4:0]  state, nextstate;
-  reg [16:0] controls;  // ORI, XORI
+  reg [16:0] controls;
 
   // state register
   always @(posedge clk or posedge reset)			
@@ -141,29 +141,29 @@ module maindec(input        clk, reset,
   assign {pcwrite, memwrite, irwrite, regwrite, 
           alusrca, branch, iord, memtoreg, regdst, 
           alusrcb, pcsrc, 
-			 aluop} = controls;  // extend aluop to 3 bits // XORI
+			 aluop} = controls;
 
   always @( * )
     case(state)
-      FETCH:          controls <= 19'b1010_00000_00100_000;
-      DECODE:         controls <= 19'b0000_00000_01100_000;
-      MEMADR:         controls <= 19'b0000_10000_01000_000;
-      MEMRD:          controls <= 19'b0000_00100_00000_000;
-      MEMWB:          controls <= 19'b0001_00010_00000_000;
-      MEMWR:          controls <= 19'b0100_00100_00000_000;
-      EXECUTE:        controls <= 19'b0000_10000_00000_010;
-      ALUWRITEBACK:   controls <= 19'b0001_00001_00000_000;
-      BRANCH:         controls <= 19'b0000_11000_00001_001;
-      ADDIEXECUTE:    controls <= 19'b0000_10000_01000_000;
-      ADDIWRITEBACK:  controls <= 19'b0001_00000_00000_000;
-      JUMP:           controls <= 19'b1000_00000_00010_000;     
-      default:        controls <= 19'b0000_xxxxx_xxxxx_xxx; // should never happen
+      FETCH:          controls <= 19'b1010_00000_0100_00;
+      DECODE:         controls <= 19'b0000_00000_1100_00;
+      MEMADR:         controls <= 19'b0000_10000_1000_00;
+      MEMRD:          controls <= 19'b0000_00100_0000_00;
+      MEMWB:          controls <= 19'b0001_00010_0000_00;
+      MEMWR:          controls <= 19'b0100_00100_0000_00;
+      EXECUTE:        controls <= 19'b0000_10000_0000_10;
+      ALUWRITEBACK:   controls <= 19'b0001_00001_0000_00;
+      BRANCH:         controls <= 19'b0000_11000_0001_01;
+      ADDIEXECUTE:    controls <= 19'b0000_10000_1000_00;
+      ADDIWRITEBACK:  controls <= 19'b0001_00000_0000_00;
+      JUMP:           controls <= 19'b1000_00000_0010_00;     
+      default:        controls <= 19'b0000_xxxxx_xxxx_xx; // should never happen
     endcase
 endmodule
 
 module aludec(input      [5:0] funct,
-              input      [2:0] aluop,       // XORI
-              output reg [2:0] alucontrol); // XORI
+              input      [1:0] aluop,
+              output reg [2:0] alucontrol);
 
     always @( * )
     case(aluop)
@@ -186,7 +186,7 @@ endmodule
 module datapath(input         clk, reset,
                 input         pcen, irwrite, regwrite,
                 input         alusrca, iord, memtoreg, regdst,
-                input  [2:0]  alusrcb,     // ORI, XORI 
+                input  [1:0]  alusrcb,
 					 input  [1:0]  pcsrc, 
                 input  [2:0]  alucontrol,
                 output [5:0]  op, funct,
