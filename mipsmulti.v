@@ -196,7 +196,6 @@ module datapath(input         clk, reset,
                 input  [2:0]  alusrcb,     // ORI, XORI 
 					 input  [1:0]  pcsrc, 
                 input  [3:0]  alucontrol,  // SRLV
-					 input         lbu,         // LBU
                 output [5:0]  op, funct,
                 output        zero,
                 output [31:0] adr, writedata, 
@@ -213,8 +212,6 @@ module datapath(input         clk, reset,
   wire [31:0] zeroimm;   // the zero-extended immediate  // ORI, XORI
   wire [31:0] signimmsh;	// the sign-extended immediate shifted left by 2
   wire [31:0] wd3, rd1, rd2;
-  wire [31:0] memdata, membyteext; // LBU
-  wire [7:0]  membyte; // LBU
 
   // op and funct fields to controller
   assign op = instr[31:26];
