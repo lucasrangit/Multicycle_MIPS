@@ -42,6 +42,10 @@ module mips(input         clk, reset,
               adr, writedata, readdata);
 endmodule
 
+// The main controller produces multiplexer select and register enable
+// signals for the datapath. The select signals are MemtoReg, RegDst,
+// IorD, PCSrc, ALUSrcB, and ALUSrcA. The enable signals are IRWrite,
+// MemWrite, PCWrite, Branch, and RegWrite.
 module controller(input        clk, reset,
                   input  [5:0] op, funct,
                   input        zero,
@@ -63,7 +67,7 @@ module controller(input        clk, reset,
              alusrcb, pcsrc, aluop, bne, lbu);  // BNE, LBU
   aludec  ad(funct, aluop, alucontrol);
 
-  assign pcen = pcwrite | (branch & zero) | (bne & ~zero);  // BNE
+  assign pcen = pcwrite | (branch & zero);
 
 endmodule
 
@@ -179,7 +183,6 @@ module aludec(input      [5:0] funct,
           6'b100100: alucontrol <= 4'b0000; // AND
           6'b100101: alucontrol <= 4'b0001; // OR
           6'b101010: alucontrol <= 4'b1011; // SLT
-			 6'b000110: alucontrol <= 4'b0100; // SRLV
           default:   alucontrol <= 4'bxxxx; // ???
         endcase
 		default: alucontrol <= 4'bxxxx; // ???
@@ -221,14 +224,8 @@ module datapath(input         clk, reset,
   flopenr #(32) pcreg(clk, reset, pcen, pcnext, pc);
   mux2    #(32) adrmux(pc, aluout, iord, adr);
   flopenr #(32) instrreg(clk, reset, irwrite, readdata, instr);
+  flopr   #(32) datareg(clk, reset, readdata, data); 
 
-  // changes for LBU
-  flopr   #(32) datareg(clk, reset, memdata, data); // LBU
-  mux4    #(8)  lbmux(readdata[31:24], readdata[23:16], readdata[15:8],
-                      readdata[7:0], aluout[1:0], membyte);  // LBU
-  zeroext8_32   lbe(membyte, membyteext);  // LBU
-  mux2    #(32) datamux(readdata, membyteext, lbu, memdata); // LBU
-  
   mux2    #(5)  regdstmux(instr[20:16], instr[15:11], regdst, writereg);
   mux2    #(32) wdmux(aluout, data, memtoreg, wd3);
   regfile       rf(clk, regwrite, instr[25:21], instr[20:16], 
