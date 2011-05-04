@@ -92,19 +92,14 @@ module maindec(input        clk, reset,
   parameter   ADDIEXECUTE		= 5'b01001;	// State 9
   parameter   ADDIWRITEBACK	= 5'b01010;	// state a
   parameter   JUMP    			= 5'b01011;	// State b
-  
-  parameter   BNEEX   		= 5'b10000;   // State 10 // BNE
-  parameter   LBURD   		= 5'b10001;  // State 11 // LBU
 
-  parameter   LW      = 6'b100011;	// Opcode for lw
-  parameter   SW      = 6'b101011;	// Opcode for sw
-  parameter   RTYPE   = 6'b000000;	// Opcode for R-type
-  parameter   BEQ     = 6'b000100;	// Opcode for beq
-  parameter   ADDI    = 6'b001000;	// Opcode for addi
-  parameter   J       = 6'b000010;	// Opcode for j
-
-  parameter   BNE     = 6'b000101;  // Opcode for bne  // BNE
-  parameter   LBU     = 6'b100100;  // Opcode for lbu  // LBU
+  // MIPS Instruction Opcodes
+  parameter   LW      = 6'b100011;	// load word lw
+  parameter   SW      = 6'b101011;	// store word sw
+  parameter   RTYPE   = 6'b000000;	// R-type
+  parameter   BEQ     = 6'b000100;	// branch if equal beq
+  parameter   ADDI    = 6'b001000;	// add immidiate addi
+  parameter   J       = 6'b000010;	// jump j
 
   reg [4:0]  state, nextstate;
   reg [18:0] controls;  // ORI, XORI, BNE, LBU
@@ -121,19 +116,15 @@ module maindec(input        clk, reset,
       DECODE:  case(op)
                  LW:      nextstate <= MEMADR;
                  SW:      nextstate <= MEMADR;
-					  LBU:     nextstate <= MEMADR; // LBU
                  RTYPE:   nextstate <= EXECUTE;
                  BEQ:     nextstate <= BRANCH;
                  ADDI:    nextstate <= ADDIEXECUTE;
                  J:       nextstate <= JUMP;
-
-					  BNE:     nextstate <= BNEEX;  // BNE
                  default: nextstate <= FETCH;  // should never happen
                endcase
       MEMADR:  case(op)
                  LW:      nextstate <= MEMRD;
                  SW:      nextstate <= MEMWR;
-					  LBU:     nextstate <= LBURD; // LBU
                  default: nextstate <= FETCH; // should never happen
                endcase
       MEMRD:   nextstate <= MEMWB;
@@ -145,9 +136,6 @@ module maindec(input        clk, reset,
       ADDIEXECUTE:  nextstate <= ADDIWRITEBACK;
       ADDIWRITEBACK:  nextstate <= FETCH;
       JUMP:    nextstate <= FETCH;
-
-		BNEEX:   nextstate <= FETCH;  // BNE
-		LBURD:   nextstate <= MEMWB;
       default: nextstate <= FETCH;  // should never happen
     endcase
 
@@ -172,9 +160,6 @@ module maindec(input        clk, reset,
       ADDIEXECUTE:  controls <= 19'b0000_100000_01000_000_0;
       ADDIWRITEBACK:  controls <= 19'b0001_000000_00000_000_0;
       JUMP:    controls <= 19'b1000_000000_00010_000_0;     
-
-      BNEEX:   controls <= 19'b0000_100001_00001_001_0; // BNE
-      LBURD:   controls <= 19'b0000_001000_00000_000_1; // LBU
       default: controls <= 19'b0000_xxxxxx_xxxxx_xxx_x; // should never happen
     endcase
 endmodule
