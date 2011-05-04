@@ -10,6 +10,9 @@ module testbench();
   wire [31:0] writedata, dataadr;
   wire memwrite;
 
+  // keep track of execution status
+  reg  [31:0] cycle;
+
   // instantiate device to be tested
   topmulti dut(clk, reset, writedata, dataadr, memwrite);
   
@@ -17,12 +20,14 @@ module testbench();
   initial
     begin
       reset <= 1; # 12; reset <= 0;
+	 cycle <= 1;
     end
 
   // generate clock to sequence tests
   always
     begin
       clk <= 1; # 5; clk <= 0; # 5;
+	 cycle <= cycle + 1;
     end
 
   // check results
