@@ -55,13 +55,12 @@ module controller(input        clk, reset,
 
   wire [2:0] aluop;  // XORI
   wire       branch, pcwrite;
-  wire       bne;  // BNE
 
   // Main Decoder and ALU Decoder subunits.
   maindec md(clk, reset, op,
              pcwrite, memwrite, irwrite, regwrite,
              alusrca, branch, iord, memtoreg, regdst, 
-             alusrcb, pcsrc, aluop, bne);  // BNE
+             alusrcb, pcsrc, aluop);
   aludec  ad(funct, aluop, alucontrol);
 
   assign pcen = pcwrite | (branch & zero);
@@ -76,8 +75,7 @@ module maindec(input        clk, reset,
                output       alusrca, branch, iord, memtoreg, regdst,
                output [2:0] alusrcb, // ORI, XORI
 					output [1:0] pcsrc,   
-               output [2:0] aluop,   // XORI
-					output       bne);    // BNE
+               output [2:0] aluop);  // XORI
 
   // FSM States
   parameter   FETCH   			= 5'b00000;   // State 0
@@ -102,7 +100,7 @@ module maindec(input        clk, reset,
   parameter   J       = 6'b000010;	// jump j
 
   reg [4:0]  state, nextstate;
-  reg [17:0] controls;  // ORI, XORI, BNE
+  reg [16:0] controls;  // ORI, XORI
 
   // state register
   always @(posedge clk or posedge reset)			
@@ -141,25 +139,25 @@ module maindec(input        clk, reset,
 
   // output logic
   assign {pcwrite, memwrite, irwrite, regwrite, 
-          alusrca, branch, iord, memtoreg, regdst, bne, // BNE
+          alusrca, branch, iord, memtoreg, regdst, 
           alusrcb, pcsrc, 
 			 aluop} = controls;  // extend aluop to 3 bits // XORI
 
   always @( * )
     case(state)
-      FETCH:   controls <= 19'b1010_000000_00100_000;
-      DECODE:  controls <= 19'b0000_000000_01100_000;
-      MEMADR:  controls <= 19'b0000_100000_01000_000;
-      MEMRD:   controls <= 19'b0000_001000_00000_000;
-      MEMWB:   controls <= 19'b0001_000100_00000_000;
-      MEMWR:   controls <= 19'b0100_001000_00000_000;
-      EXECUTE: controls <= 19'b0000_100000_00000_010;
-      ALUWRITEBACK: controls <= 19'b0001_000010_00000_000;
-      BRANCH:   controls <= 19'b0000_110000_00001_001;
-      ADDIEXECUTE:  controls <= 19'b0000_100000_01000_000;
-      ADDIWRITEBACK:  controls <= 19'b0001_000000_00000_000;
-      JUMP:    controls <= 19'b1000_000000_00010_000;     
-      default: controls <= 19'b0000_xxxxxx_xxxxx_xxx; // should never happen
+      FETCH:          controls <= 19'b1010_00000_00100_000;
+      DECODE:         controls <= 19'b0000_00000_01100_000;
+      MEMADR:         controls <= 19'b0000_10000_01000_000;
+      MEMRD:          controls <= 19'b0000_00100_00000_000;
+      MEMWB:          controls <= 19'b0001_00010_00000_000;
+      MEMWR:          controls <= 19'b0100_00100_00000_000;
+      EXECUTE:        controls <= 19'b0000_10000_00000_010;
+      ALUWRITEBACK:   controls <= 19'b0001_00001_00000_000;
+      BRANCH:         controls <= 19'b0000_11000_00001_001;
+      ADDIEXECUTE:    controls <= 19'b0000_10000_01000_000;
+      ADDIWRITEBACK:  controls <= 19'b0001_00000_00000_000;
+      JUMP:           controls <= 19'b1000_00000_00010_000;     
+      default:        controls <= 19'b0000_xxxxx_xxxxx_xxx; // should never happen
     endcase
 endmodule
 
