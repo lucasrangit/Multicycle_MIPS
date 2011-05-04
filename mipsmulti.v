@@ -91,11 +91,8 @@ module maindec(input        clk, reset,
   parameter   BRANCH   			= 5'b01000;	// State 8
   parameter   ADDIEXECUTE		= 5'b01001;	// State 9
   parameter   ADDIWRITEBACK	= 5'b01010;	// state a
-  parameter   JEX     			= 5'b01011;	// State b
-  parameter   ORIEX   			= 5'b01100;   // State c // ORI
-  parameter   ORIWB   			= 5'b01101;   // State d // ORI
-  parameter   XORIEX  			= 5'b01110;   // State e // XORI
-  parameter   XORIWB  			= 5'b01111;   // State f // XORI
+  parameter   JUMP    			= 5'b01011;	// State b
+  
   parameter   BNEEX   		= 5'b10000;   // State 10 // BNE
   parameter   LBURD   		= 5'b10001;  // State 11 // LBU
 
@@ -105,8 +102,7 @@ module maindec(input        clk, reset,
   parameter   BEQ     = 6'b000100;	// Opcode for beq
   parameter   ADDI    = 6'b001000;	// Opcode for addi
   parameter   J       = 6'b000010;	// Opcode for j
-  parameter   ORI     = 6'b001101;  // Opcode for ori  // ORI
-  parameter   XORI    = 6'b001110;  // Opcode for xori // XORI
+
   parameter   BNE     = 6'b000101;  // Opcode for bne  // BNE
   parameter   LBU     = 6'b100100;  // Opcode for lbu  // LBU
 
@@ -129,9 +125,8 @@ module maindec(input        clk, reset,
                  RTYPE:   nextstate <= EXECUTE;
                  BEQ:     nextstate <= BRANCH;
                  ADDI:    nextstate <= ADDIEXECUTE;
-                 J:       nextstate <= JEX;
-					  ORI:     nextstate <= ORIEX;  // ORI
-					  XORI:    nextstate <= XORIEX; // XORI
+                 J:       nextstate <= JUMP;
+
 					  BNE:     nextstate <= BNEEX;  // BNE
                  default: nextstate <= FETCH;  // should never happen
                endcase
@@ -149,11 +144,8 @@ module maindec(input        clk, reset,
       BRANCH:   nextstate <= FETCH;
       ADDIEXECUTE:  nextstate <= ADDIWRITEBACK;
       ADDIWRITEBACK:  nextstate <= FETCH;
-      JEX:     nextstate <= FETCH;
-		ORIEX:   nextstate <= ORIWB;  // ORI
-		ORIWB:   nextstate <= FETCH;  // ORI
-		XORIEX:  nextstate <= XORIWB; // XORI
-		XORIWB:  nextstate <= FETCH;  // XORI
+      JUMP:    nextstate <= FETCH;
+
 		BNEEX:   nextstate <= FETCH;  // BNE
 		LBURD:   nextstate <= MEMWB;
       default: nextstate <= FETCH;  // should never happen
@@ -179,11 +171,8 @@ module maindec(input        clk, reset,
       BRANCH:   controls <= 19'b0000_110000_00001_001_0;
       ADDIEXECUTE:  controls <= 19'b0000_100000_01000_000_0;
       ADDIWRITEBACK:  controls <= 19'b0001_000000_00000_000_0;
-      JEX:     controls <= 19'b1000_000000_00010_000_0;     
-      ORIEX:   controls <= 19'b0000_100000_10000_011_0; // ORI
-		ORIWB:   controls <= 19'b0001_000000_00000_000_0; // ORI
-      XORIEX:  controls <= 19'b0000_100000_10000_100_0; // XORI
-		XORIWB:  controls <= 19'b0001_000000_00000_000_0; // XORI
+      JUMP:    controls <= 19'b1000_000000_00010_000_0;     
+
       BNEEX:   controls <= 19'b0000_100001_00001_001_0; // BNE
       LBURD:   controls <= 19'b0000_001000_00000_000_1; // LBU
       default: controls <= 19'b0000_xxxxxx_xxxxx_xxx_x; // should never happen
@@ -198,8 +187,7 @@ module aludec(input      [5:0] funct,
     case(aluop)
       3'b000: alucontrol <= 4'b0010;  // add
       3'b001: alucontrol <= 4'b1010;  // sub
-		3'b011: alucontrol <= 4'b0001;  // or  // ORI
-		3'b100: alucontrol <= 4'b0101;  // xor // XORI
+
       3'b010: case(funct)           // RTYPE
           6'b100000: alucontrol <= 4'b0010; // ADD
           6'b100010: alucontrol <= 4'b1010; // SUB
